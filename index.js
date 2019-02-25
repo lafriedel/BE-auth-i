@@ -13,7 +13,7 @@ const sessionConfig = {
     name: "sesh",
     secret: "innumerable riotous angelic particulars",
     cookie: {
-        maxAge: 1000 * 60 * 10,
+        maxAge: 1000 * 10,
         secure: false,
     },
     httpOnly: true,
@@ -90,27 +90,28 @@ server.get("/api/users", authorize, (req, res) => {
 });
 
 function authorize(req, res, next) {
-    const { username, password } = req.headers;
+    // const { username, password } = req.headers;
 
-    if (username && password) {
-        db("users")
-          .where("username", username)
-          .first()
-          .then(user => {
-            if (user && bcrypt.compareSync(password, user.password)) {
+    // if (username && password)
+    if (req.session && req.session.user) {
+        // db("users")
+        //   .where("username", username)
+        //   .first()
+        //   .then(user => {
+        //     if (user && bcrypt.compareSync(password, user.password)) {
               next();
             } else {
               res.status(401).json({ message: "You shall not pass!" });
             }
-          })
-          .catch(err => {
-            res.status(500).json({ error: "There was an error." });
-          });
-      } else {
-        res
-          .status(400)
-          .json({ error: "You must provide both a username and password." });
-      }
+    //       })
+    //       .catch(err => {
+    //         res.status(500).json({ error: "There was an error." });
+    //       });
+    //   } else {
+    //     res
+    //       .status(400)
+    //       .json({ error: "You must provide both a username and password." });
+    //   }
 }
 
 server.listen(8000, () => console.log("Server listening on port 8000"));
