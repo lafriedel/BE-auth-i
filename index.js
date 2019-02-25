@@ -4,13 +4,27 @@ const knexConfig = require("./knexfile");
 const helmet = require("helmet");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const session = require("express-session");
 
 const server = express();
 const db = knex(knexConfig.development);
 
+const sessionConfig = {
+    name: "sesh",
+    secret: "innumerable riotous angelic particulars",
+    cookie: {
+        maxAge: 1000 * 60 * 10,
+        secure: false,
+    },
+    httpOnly: true,
+    resave: false,
+    saveUninitialized: false
+}
+
 server.use(helmet());
 server.use(express.json());
 server.use(cors());
+server.use(session(sessionConfig));
 
 server.post("/api/register", (req, res) => {
   let newUser = req.body;
@@ -49,6 +63,7 @@ server.post("/api/login", (req, res) => {
       .first()
       .then(user => {
         if (user && bcrypt.compareSync(password, user.password)) {
+            req.session.user = user;
           res.status(200).json({ message: `Welcome ${user.username}!` });
         } else {
           res.status(401).json({ message: "Invalid credentials." });
@@ -85,7 +100,7 @@ function authorize(req, res, next) {
             if (user && bcrypt.compareSync(password, user.password)) {
               next();
             } else {
-              res.status(401).json({ message: "Invalid credentials." });
+              res.status(401).json({ message: "You shall not pass!" });
             }
           })
           .catch(err => {
