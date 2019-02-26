@@ -3,7 +3,7 @@ import React from 'react';
 const Dashboard = props => {
     return (
         <div>
-            <p>Welcome to the Dashboard.</p>
+            <p>Welcome to the Dashboard, {props.username}.</p>
         </div>
     )
 }

@@ -1,8 +1,8 @@
 import React from "react";
-import axios from 'axios';
+import axios from "axios";
 import LoginRegister from "./LoginRegister";
 import Dashboard from "./Dashboard";
-import { Route } from 'react-router-dom';
+import { Route } from "react-router-dom";
 
 const authenticate = Dashboard => LoginRegister =>
   class extends React.Component {
@@ -13,6 +13,13 @@ const authenticate = Dashboard => LoginRegister =>
       },
       userLoggedIn: false
     };
+
+    componentDidMount() {
+        axios.get("http://localhost:8000/api/restricted")
+            .then(res =>
+                console.log(res))
+            .catch(err => console.log(err))
+    }
 
     userFormChange = e => {
       this.setState({
@@ -29,12 +36,12 @@ const authenticate = Dashboard => LoginRegister =>
       axios
         .post("http://localhost:8000/api/login", this.state.user)
         .then(res => {
-            console.log(res);
+          console.log(res);
           this.setState({
             ...this.state,
             user: {
-                ...this.state.user,
-                password: ""
+              ...this.state.user,
+              password: ""
             },
             userLoggedIn: true
           });
@@ -45,9 +52,19 @@ const authenticate = Dashboard => LoginRegister =>
 
     render() {
       return this.state.userLoggedIn ? (
-        <Route path="/dashboard" render={props => <Dashboard {...props} username={this.state.user.username} />} />
+        <Route
+          path="/dashboard"
+          render={props => (
+            <Dashboard {...props} username={this.state.user.username} />
+          )}
+        />
       ) : (
-        <LoginRegister history={this.props.history} userFormChange={this.userFormChange} logIn={this.logIn} user={this.state.user} />
+        <LoginRegister
+          history={this.props.history}
+          userFormChange={this.userFormChange}
+          logIn={this.logIn}
+          user={this.state.user}
+        />
       );
     }
   };
