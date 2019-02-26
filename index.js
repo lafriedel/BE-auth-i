@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
+const KnexSessionStore = require('connect-session-knex')(session);
 
 const server = express();
 const db = knex(knexConfig.development);
@@ -13,18 +14,29 @@ const sessionConfig = {
     name: "sesh",
     secret: "innumerable riotous angelic particulars",
     cookie: {
-        maxAge: 1000 * 10,
+        maxAge: 1000 * 60 * 5,
         secure: false,
     },
     httpOnly: true,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new KnexSessionStore({
+        tablename: "sessions",
+        sidfieldname: "sid",
+        knex: db,
+        createtable: true,
+        clearInterval: 1000*60*10,
+    })
 }
 
 server.use(helmet());
 server.use(express.json());
 server.use(cors());
 server.use(session(sessionConfig));
+
+server.use("/api/restricted", restricted, (req, res) => {
+
+})
 
 server.post("/api/register", (req, res) => {
   let newUser = req.body;
@@ -66,7 +78,7 @@ server.post("/api/login", (req, res) => {
             req.session.user = user;
           res.status(200).json({ message: `Welcome ${user.username}!` });
         } else {
-          res.status(401).json({ message: "Invalid credentials." });
+          res.status(401).json({ message: "You shall not pass!" });
         }
       })
       .catch(err => {
@@ -112,6 +124,10 @@ function authorize(req, res, next) {
     //       .status(400)
     //       .json({ error: "You must provide both a username and password." });
     //   }
+}
+
+function restricted(req, res, next) {
+
 }
 
 server.listen(8000, () => console.log("Server listening on port 8000"));
