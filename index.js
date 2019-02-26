@@ -6,6 +6,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const KnexSessionStore = require('connect-session-knex')(session);
+const restrictedRoutes = require("./routes/restrictedRoutes");
 
 const server = express();
 const db = knex(knexConfig.development);
@@ -34,9 +35,7 @@ server.use(express.json());
 server.use(cors());
 server.use(session(sessionConfig));
 
-server.use("/api/restricted", restricted, (req, res) => {
-
-})
+server.use("/api/restricted", restricted, restrictedRoutes);
 
 server.post("/api/register", (req, res) => {
   let newUser = req.body;
@@ -91,6 +90,20 @@ server.post("/api/login", (req, res) => {
   }
 });
 
+server.get("/api/logout", (req, res) => {
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        res.send("Error logging out.");
+      } else {
+        res.send("You have logged out.");
+      }
+    })
+  } else {
+    res.end();
+  }
+})
+
 server.get("/api/users", authorize, (req, res) => {
   db("users")
     .then(users => {
@@ -102,32 +115,21 @@ server.get("/api/users", authorize, (req, res) => {
 });
 
 function authorize(req, res, next) {
-    // const { username, password } = req.headers;
 
-    // if (username && password)
     if (req.session && req.session.user) {
-        // db("users")
-        //   .where("username", username)
-        //   .first()
-        //   .then(user => {
-        //     if (user && bcrypt.compareSync(password, user.password)) {
               next();
             } else {
               res.status(401).json({ message: "You shall not pass!" });
             }
-    //       })
-    //       .catch(err => {
-    //         res.status(500).json({ error: "There was an error." });
-    //       });
-    //   } else {
-    //     res
-    //       .status(400)
-    //       .json({ error: "You must provide both a username and password." });
-    //   }
 }
 
 function restricted(req, res, next) {
-
+  if (req.session && req.session.user) {
+    next();
+  } else {
+    res.status(401).send("Restricted: You must be logged in to access this content.")
+  }
 }
 
-server.listen(8000, () => console.log("Server listening on port 8000"));
+const port = 8000
+server.listen(port, () => console.log(`Server listening on port ${port}`));
