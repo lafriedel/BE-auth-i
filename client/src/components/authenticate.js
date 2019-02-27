@@ -15,10 +15,14 @@ const authenticate = Dashboard => LoginRegister =>
     };
 
     componentDidMount() {
-        axios.get("http://localhost:8000/api/restricted")
-            .then(res =>
-                console.log(res))
-            .catch(err => console.log(err))
+        // axios.get("http://localhost:8000/api/restricted")
+        //     .then(res =>
+        //         console.log(res))
+        //     .catch(err => console.log(err))
+        const api = axios.create({
+            withCredentials: true
+        });
+        
     }
 
     userFormChange = e => {
