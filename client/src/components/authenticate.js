@@ -4,6 +4,11 @@ import LoginRegister from "./LoginRegister";
 import Dashboard from "./Dashboard";
 import { Route } from "react-router-dom";
 
+axios.interceptors.request.use(options => {
+  options.withCredentials = true;
+  return options;
+})
+
 const authenticate = Dashboard => LoginRegister =>
   class extends React.Component {
     state = {
